@@ -10,7 +10,6 @@ $result = mysqli_query($con,"SELECT * FROM movietitles");
 if(isset($_POST["updateRating"])){
 	$n_rating = $_POST["rating"];
 	$n_id = $_POST["id"];
-	echo "$n_id\n";
 	$sql = "UPDATE movietitles SET Rating='$n_rating' where id='$n_id' ";
 	if($con->query($sql) === TRUE){
 		echo "Record updated successfully";
@@ -28,9 +27,10 @@ $con->close();
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-	<link rel="stylesheet" href="http://scs.ryerson.ca/~brturner/filmly/filmly.css">
+	<!--<link rel="stylesheet" href="http://scs.ryerson.ca/~brturner/filmly/filmly.css">-->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="/842/movieFinal.css" type="text/css"/>
 </head>
 <body>
 	<div class="col-xs-12 col-xs-offset-0 col-md-8 col-md-offset-2" id="content_holder_all">
@@ -38,13 +38,16 @@ $con->close();
 			<div class="row">
 				<div class="col-xs-12 col-xs-offset-0 col-md-10 col-md-offset-1">
 					<section class="header">
-						<div> 
-							<div class="hamburger_menu" onclick="myFunction(this)">
-								<div class="bar1"></div>
-								<div class="bar2"></div>
-								<div class="bar3"></div>
-							</div>
-							<h1 class="text-center" id="main_title">Filmly</h1>
+						<div class="menu-collapsed">
+							<div class="bar"></div>
+							<nav>
+								<ul>
+									<li><a href="/842/movieFinal.php">Home</a></li>
+									<li><a href="/842/loginPage/logout.php?logout">Logout</a></li>
+									
+								</ul>
+								<h1 class="text-center" id="main_title">Filmly</h1>
+							</nav>
 						</div>
 					</section>
 					<?php
@@ -78,8 +81,10 @@ $con->close();
 </body>
 <!--Animation for hamburger menu-->
 <script>
-	function myFunction(x) {
-		x.classList.toggle("change");
-	}
+
+$(".menu-collapsed").click(function() {
+  $(this).toggleClass("menu-expanded");
+});
 </script>
+
 </html>
