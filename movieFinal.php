@@ -5,14 +5,20 @@ if (mysqli_connect_errno())
 {
 	echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
-
 $result = mysqli_query($con,"SELECT * FROM movietitles");
-$sql = "UPDATE movietitles SET Rating=0 where id=1 ";
-if(mysqli_query($con,$sql)){
-	echo "Record updated successfully";
-}else{
-	echo "Error updating record: " . mysql_error($con);
+
+if(isset($_POST["updateRating"])){
+	$n_rating = $_POST["rating"];
+	$n_id = $_POST["id"];
+	echo "$n_id\n";
+	$sql = "UPDATE movietitles SET Rating='$n_rating' where id='$n_id' ";
+	if($con->query($sql) === TRUE){
+		echo "Record updated successfully";
+	}else{
+		echo "Error updating record: " . $con->error;
+	}
 }
+$con->close();
 ?>
 
 <html>
@@ -47,16 +53,19 @@ if(mysqli_query($con,$sql)){
 
 					echo "<div class=\"row lead\">\n"; 
 					echo "							<label for=\"rating\" class=\"list_items\">" . $row['Title'] . "</label>"; 
-					echo "							<form action=\"\" type=\"Post\">\n"; 
-					echo "								<input type=\"radio\" name=\"rating\" value=\"1\"> 1\n"; 
-					echo "								<input type=\"radio\" name=\"rating\" value=\"2\"> 2\n"; 
-					echo "								<input type=\"radio\" name=\"rating\" value=\"3\"> 3\n"; 
-					echo "								<input type=\"radio\" name=\"rating\" value=\"4\"> 4\n"; 
-					echo "								<input type=\"radio\" name=\"rating\" value=\"5\"> 5\n"; 
-					echo "								<input type=\"submit\" value=\"Rate\">\n"; 
+					echo "							<form action=\"movieFinal.php\" method=\"Post\">\n"; 
+					echo " 								<input type=\"hidden\" name=\"id\" value=\"$i\">\n";
+					echo "								<input type=\"radio\" name=\"rating\" id=\"rating1\"value=\"1\"> 1\n"; 
+					echo "								<input type=\"radio\" name=\"rating\" id=\"rating2\"value=\"2\"> 2\n"; 
+					echo "								<input type=\"radio\" name=\"rating\" id=\"rating3\"value=\"3\"> 3\n"; 
+					echo "								<input type=\"radio\" name=\"rating\" id=\"rating4\"value=\"4\"> 4\n"; 
+					echo "								<input type=\"radio\" name=\"rating\" id=\"rating5\"value=\"5\"> 5\n"; 
+					echo "								<input type=\"submit\" name=\"updateRating\" id=\"rate\" value=\"Rate\">\n"; 
 					echo "							</form>\n"; 
+					echo "								<p id=\"lblRating$i\">The current rating is " . $row['Rating'] ."</p>";
 					echo "							<hr>\n"; 
 					echo "						</div>\n";
+					$i++;
 				}
 				
 				?>
