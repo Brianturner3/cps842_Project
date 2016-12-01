@@ -25,11 +25,37 @@
 	if(isset($_POST["updateRating"])){
 	$n_rating = $_POST["rating"];
 	$n_id = $_POST["id"];
+	$n_user = $_SESSION["user"];
+
+	$query = "SELECT * FROM ratedMovies WHERE user_id='$n_user' AND movie_id='$n_id'";
+	$result2 = $con->query("SELECT * FROM ratedMovies where user_id='".$n_user."' AND  movie_id='".$n_id."'");
+	echo "".$result2->num_rows ."\n";
+	if(($result2->num_rows) > 0){
+		echo "Updated";
+		$sql2 = "UPDATE ratedMovies SET rating='".$n_rating."' where user_id='".$n_user."' AND  movie_id='".$n_id."'";
+	}else{
+		echo "INSERTED";
+		$sql3 = "INSERT INTO ratedMovies (user_id, movie_id, rating) VALUES (".$n_user.",".$n_id.",".$n_rating.")";
+	}	
+	$result2->close(); //Close result set
+
 	$sql = "UPDATE movietitles SET Rating='$n_rating' where id='$n_id' ";
 	if($con->query($sql) === TRUE){
-		echo "Record updated successfully";
+		echo "Record updated successfully\n";
 	}else{
-		echo "Error updating record: " . $con->error;
+		echo "Error updating record: " . $con->error ."\n";
+	}
+
+	if($con->query($sql2) === TRUE){
+		echo "Record3 updated successfully";
+	}else{
+		echo "Error3 updating record: " . $con->error;
+	}
+
+	if($con->query($sql3) === TRUE){
+		echo "Record3 updated successfully";
+	}else{
+		echo "Error3 updating record: " . $con->error;
 	}
 }
 ?>
