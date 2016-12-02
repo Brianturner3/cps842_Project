@@ -88,11 +88,10 @@ if($resC->num_rows > 0){
 	}
 }
 
-print_r($rating_Not_Watched);
+//Place recommended ratings into an array
 $maxNotWatched = sizeof($rating_Not_Watched);
 $ratingsList = array();
 for($i = 0; $i < $maxNotWatched; $i++){
-	echo "rate".$rating_Not_Watched[$i]."\n";
 	$top = $rating_Not_Watched[$i] * $pearsonTotal;
 	$totRating = $top / $pearsonTotal;
 	array_push($ratingsList, $totRating);
@@ -131,7 +130,35 @@ for($i = 0; $i < $maxNotWatched; $i++){
 							</nav>
 						</div>
 					</section>
+					<?php 
+					echo "<div class=\"row lead\">\n"; 
+					echo "							<label for=\"rating\" class=\"list_items\">" . $row['Title'] . "</label>"; 
 
+					echo "The Pearson Coefficient is " . $pearsonTotal ."\n";
+					echo "							<hr>\n";  
+					$rec_list_rate = sizeof($rating_Not_Watched);
+					for($i = 0; $i < $rec_list_rate; $i++){
+						//$ratingsList[$i];
+						//$rating_Not_Watched_ID[$i];
+						$Movie_Title = "SELECT Title FROM `movietitles`WHERE ID='".$rating_Not_Watched_ID[$i]."'";
+						$Movie_Title_query = $con->query($Movie_Title);
+						if($Movie_Title_query->num_rows > 0){
+							$x = 0;
+							while($Movie_row=$Movie_Title_query->fetch_assoc()){
+								$ratingsList[$x];
+								$rating_Not_Watched_ID[$x];
+								echo  "<p>Recommeded watching ".$Movie_row['Title']." average rating of ".$ratingsList[$i]."</p>";
+								echo "							<hr>\n"; 
+								$x++;
+							}
+						}
+					}
+
+					echo "						</div>\n";
+
+
+
+					?>
 				</div>
 			</div>
 		</div>	
