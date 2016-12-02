@@ -1,64 +1,102 @@
 <?php
-	ob_start();
-	session_start();
-	require_once 'dbconnect.php';
-	
+ob_start();
+session_start();
+require_once 'dbconnect.php';
+
 	// if session is not set this will redirect to login page
-	if( !isset($_SESSION['user']) ) {
-		header("Location: login.php");
-		exit;
-	}
+if( !isset($_SESSION['user']) ) {
+	header("Location: login.php");
+	exit;
+}
 	// select loggedin users detail
-	$res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
-	$userRow=mysql_fetch_array($res);
-	
-	$con=mysqli_connect("localhost","root","","lessmovies");
-	
+$res=mysql_query("SELECT * FROM users WHERE userId=".$_SESSION['user']);
+$userRow=mysql_fetch_array($res);
+
+$con=mysqli_connect("localhost","root","","lessmovies");
+
 	// Check connection
-	if (mysqli_connect_errno())
-	{
+if (mysqli_connect_errno())
+{
 	echo "Failed to connect to MySQL: " . mysqli_connect_error();
+}
+
+	//Retrieve list of movies rated by the first user
+$refA = "SELECT rm.user_id ,rm.movie_id ,rm.rating FROM ratedmovies rm WHERE (SELECT COUNT(*) FROM ratedmovies rm2 WHERE rm.movie_id=rm2.movie_id)>1 AND rm.user_id=500565238";
+$result3 = $con->query($refA);
+$numA_movies;
+$avgA = 0;
+$ratingA_list = array();
+$ratingAk = 0;
+if($result3->num_rows > 0){
+	while($row= $result3->fetch_assoc()){
+		$avgA += $row["rating"];
+		$numA_movies++;
+		array_push($ratingA_list,$row["rating"]);
 	}
+}else{
+	echo "err";
+}
 
-	//Get the average rating for user id = "500565238"
-	$A_avg = "SELECT AVG(rating) AS rating FROM ratedMovies WHERE user_id='500565238'";
-	$result2 = $con->query($A_avg);
-
-	if($result2->num_rows > 0){
-		while($row = $result2->fetch_assoc()){
-			echo "rating: ".$row["rating"]."<br>";
-		}
-	}else{
-		echo "0 results";
+	//Retrieve list of movies rated by the second user
+$refB ="SELECT rm.user_id ,rm.movie_id ,rm.rating FROM ratedmovies rm WHERE (SELECT COUNT(*) FROM ratedmovies rm2 WHERE rm.movie_id=rm2.movie_id)>1 AND rm.user_id=500565239";
+$resB = $con->query($refB);
+$numB_movies;
+$avgB = 0;
+$ratingB_list = array();
+$ratingBk = 0;
+if($resB->num_rows > 0){
+	while($row= $resB->fetch_assoc()){
+		$avgB += $row["rating"];
+		$numB_movies++;
+		array_push($ratingB_list,$row["rating"]);
 	}
+}else{
+	echo "err";
+}
 
-	$B_avg;
+	//Calc. avg. rating for user B
+$avgA = $avgA/$numA_movies;
 
-	//Retrieve list of movies rated by both users
-	$ref = "SELECT rm.user_id ,rm.movie_id ,rm.rating FROM ratedmovies rm WHERE (SELECT COUNT(*) FROM ratedmovies rm2 WHERE rm.movie_id=rm2.movie_id)>1";
-	$result3 = $con->query($ref);
-	$B_users = result3->num_rows; //#number of users for B
-	if($result3->num_rows > 0){
-		while($row= $result3->fetch_assoc()){
-			echo "rating: ".$row["rating"]."<br>";
-		}
-	}else{
-		echo "err";
+	//Calc. avg. rating for user B
+$avgB = $avgB/$numB_movies;
+
+	//Calculate Pearson Coefficient
+$pearsonTop = 0;
+$pearsonBottomA = 0;
+$pearsonBottomB = 0;
+$maxPearson = sizeof($ratingB_list);
+for($i = 0; $i < $maxPearson; $i++){
+	$tmpA = $ratingA_list[$i] - $avgA;
+	$tmpB = $ratingB_list[$i] - $avgB;
+	$pearsonBottomA = $pearsonBottomA + ($tmpA ** 2);
+	$pearsonBottomB = $pearsonBottomB + ($tmpB ** 2);
+	$pearsonTop = $pearsonTop + ($tmpA*$tmpB);
+}
+$pearsonBottom = sqrt($pearsonBottomA*$pearsonBottomB);
+$pearsonTotal = $pearsonTop/$pearsonBottom;
+	//End of Pearson Coefficent	
+
+	//Calculate ratings for movies not watched by first user
+$refDiff = "SELECT rm.user_id ,rm.movie_id ,rm.rating FROM ratedmovies rm WHERE (SELECT COUNT(*) FROM ratedmovies rm2 WHERE rm.movie_id=rm2.movie_id)=1 AND rm.user_id='500565239'";
+$resC = $con->query($refDiff);
+$rating_Not_Watched= array();
+$rating_Not_Watched_ID = array();
+if($resC->num_rows > 0){
+	while($diffRow = $resC->fetch_assoc()){
+		array_push($rating_Not_Watched_ID,$diffRow['movie_id']);
+		array_push($rating_Not_Watched,$diffRow['rating']);
 	}
+}
 
-
-	/*
-	$avgB= "SELECT AVG(rating) AS rating FROM ratedMovies WHERE user_id='500565239'";
-	$result3 = $con->query($avgB);
-
-	if($result2->num_rows > 0){
-		while($row = $result3->fetch_assoc()){
-			echo "rating: ".$row["rating"]."<br>";
-		}
-	}else{
-		echo "0 results";
-	}/*
-	
+print_r($rating_Not_Watched);
+$maxNotWatched = sizeof($rating_Not_Watched);
+$ratingsList = array();
+for($i = 0; $i < $maxNotWatched; $i++){
+	echo "rate".$rating_Not_Watched[$i]."\n";
+	$top = $rating_Not_Watched[$i] * $pearsonTotal;
+	$totRating = $top / $pearsonTotal;
+	array_push($ratingsList, $totRating);
+}
 
 ?>
 
@@ -94,19 +132,18 @@
 						</div>
 					</section>
 
-				
+				</div>
 			</div>
-		</div>
-	</div>	
-</div>
+		</div>	
+	</div>
 
 </body>
 <!--Animation for hamburger menu-->
 <script>
 
-$(".menu-collapsed").click(function() {
-  $(this).toggleClass("menu-expanded");
-});
+	$(".menu-collapsed").click(function() {
+		$(this).toggleClass("menu-expanded");
+	});
 </script>
 </html>
 <?php ob_end_flush(); ?>
